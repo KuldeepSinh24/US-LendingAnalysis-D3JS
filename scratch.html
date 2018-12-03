@@ -198,6 +198,7 @@
                     createPropertUseTypeChart();
                     createProductLoanTypeChart();
                     createBestOfferStatus();
+                    document.getElementById("defaultOpen").click();
                 });
             });
         });
@@ -812,12 +813,28 @@
             });
     }
 
+    //Function that opens tabs
+    function openTab(evt, cityName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
 </script>
 
 <body>
     <table align="center">
         <tr>
             <td>
+                <!-- Map -->
                 <h2 id="choropleth" align="center">Choropleth Map</h2>
                 <h2>Offer Status 2015 [$] Damage Type:
                     <span id="damage_label">All</span>
@@ -826,55 +843,43 @@
             </td>
             <td>
                     <div class="tab">
-                            <button class="tablinks" onclick="openCity(event, 'London')">London</button>
-                            <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
-                            <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
-                          </div>
-                          
-                          <!-- Tab content -->
-                          <div id="London" class="tabcontent">
-                                <h2 id="choropleth" align="center">Product Loan Type</h2>
-                                <h2>Product Loan Type:
-                                    <span id="damage_label">All</span>
-                                </h2>
-                                <svg width="500" height="700" id="product_loan_bar_chart"></svg>
-                          </div>
-                          
-                          <div id="Paris" class="tabcontent">
-                                <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
-                                <h2>Property Use Type [$] State:
-                                    <span id="state_label">All</span>
-                                </h2>
-                                <svg width="500" height="700" id="property_id_bar_chart"></svg>
-                          </div>
-                          
-                          <div id="Tokyo" class="tabcontent">
-                                <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
-                                <h2>Property Use Type [$] State:
-                                    <span id="state_label">All</span>
-                                </h2>
-                                <svg width="500" height="700" id="is_bestOffer_bar_chart"></svg>
-                          </div>
-                          <script>
-                                function openCity(evt, cityName) {
-                                    var i, tabcontent, tablinks;
-                                    tabcontent = document.getElementsByClassName("tabcontent");
-                                    for (i = 0; i < tabcontent.length; i++) {
-                                        tabcontent[i].style.display = "none";
-                                    }
-                                    tablinks = document.getElementsByClassName("tablinks");
-                                    for (i = 0; i < tablinks.length; i++) {
-                                        tablinks[i].className = tablinks[i].className.replace(" active", "");
-                                    }
-                                    document.getElementById(cityName).style.display = "block";
-                                    evt.currentTarget.className += " active";
-                                }
-                                </script>
-                <!-- <h2 id="barchart" align="center">Bar Chart</h2>
-                <h2>Losses 2015 [$] State:
-                    <span id="state_label">All</span>
-                </h2> -->
-                <svg width="400" height="700" id="bar_chart"></svg>
+                        <button class="tablinks" onclick="openTab(event, 'First')" id="defaultOpen">First</button>
+                        <button class="tablinks" onclick="openTab(event, 'Second')">Second</button>
+                        <button class="tablinks" onclick="openTab(event, 'Third')">Third</button>
+                        <button class="tablinks" onclick="openTab(event, 'Fourth')">Fourth</button>
+                    </div>
+                    
+                    <!-- Tab content -->
+                    <div id="First" class="tabcontent">
+                        <h2 id="barchart" align="center">Bar Chart</h2>
+                        <h2>Losses 2015 [$] State:
+                        <span id="state_label">All</span>
+                        </h2>
+                        <svg width="400" height="700" id="bar_chart"></svg>
+                    </div>
+                    <div id="Second" class="tabcontent">
+                        <h2 id="choropleth" align="center">Product Loan Type</h2>
+                        <h2>Product Loan Type:
+                        <span id="damage_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="product_loan_bar_chart"></svg>
+                    </div>
+
+                    <div id="Third" class="tabcontent">
+                        <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
+                        <h2>Property Use Type [$] State:
+                            <span id="state_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="property_id_bar_chart"></svg>
+                    </div>
+
+                    <div id="Fourth" class="tabcontent">
+                        <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
+                        <h2>Property Use Type [$] State:
+                            <span id="state_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="is_bestOffer_bar_chart"></svg>
+                    </div>
             </td>
         </tr>
         <tr>
