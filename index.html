@@ -1,105 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style>
-    .states :hover {
-        fill: red;
-    }
-
-    .state-borders {
-        fill: none;
-        stroke: #fff;
-        stroke-width: 0.5px;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-        pointer-events: none;
-    }
-
-
-    .states :hover {
-        fill: red;
-    }
-
-    .state-borders {
-        fill: none;
-        stroke: #fff;
-        stroke-width: 0.5px;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-        pointer-events: none;
-    }
-
-    .categories {
-        fill: none;
-        stroke: #fff;
-        stroke-linejoin: round;
-    }
-
-    .categories-choropleth {
-        fill: #ccc;
-    }
-
-    #tooltip-container {
-        position: absolute;
-        background-color: #fff;
-        color: #000;
-        padding: 10px;
-        border: 1px solid;
-        display: none;
-    }
-
-    #canvas svg {
-        border: 0px;
-    }
-
-    .tooltip_key {
-        font-weight: bold;
-    }
-
-    .tooltip_value {
-        margin-left: 20px;
-        float: right;
-    }
-
-    .x-axis {
-        fill: #000;
-    }
-
-    body {
-        margin: 15px;
-        background-color: #F1F3F3
-    }
-
-
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #D4D8DA;
-        stroke-width: 1px;
-        shape-rendering: crispEdges;
-    }
-
-    .x path {
-        display: none;
-    }
-
-    .toolTip {
-        position: absolute;
-        display: none;
-        min-width: 80px;
-        height: auto;
-        background: none repeat scroll 0 0 #ffffff;
-        border: 1px solid #6F257F;
-        padding: 14px;
-        text-align: center;
-    }
-</style>
 
 <div id="tooltip-container"></div>
 
 <div id="canvas-svg"></div>
-
-
+<link rel="stylesheet" type="text/css" href="style.css">
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -115,7 +20,7 @@
     var usdata;
     var mydata;
     var COLOR_COUNTS = 9;
-    var COLOR_FIRST = "#3498DB",
+    var COLOR_FIRST = "#d8f7fa",
         COLOR_LAST = "#1B4F72";
     var rgb = hexToRgb(COLOR_FIRST);
     var COLOR_START = new Color(rgb.r, rgb.g, rgb.b);
@@ -141,7 +46,7 @@
 
     function loadDashboard() {
 
-        d3.csv("https://raw.githubusercontent.com/KuldeepSinh24/VA-HomeWork4/master/joined_data_with_state_codes.csv", function (error, data) {
+        d3.csv("https://raw.githubusercontent.com/Deep419/va_fall2018/master/Data/joined_data_with_state_codes_updated.csv?token=Apgl-qVudnYLerCt6V2U-AljmQ5Kqe3Qks5cDeruwA%3D%3D", function (error, data) {
             if (error) throw error;
             dataset = data;
             console.log(dataset);
@@ -160,6 +65,7 @@
                     createPropertUseTypeChart();
                     createProductLoanTypeChart();
                     createBestOfferStatus();
+                    document.getElementById("defaultOpen").click();
                 });
             });
         });
@@ -174,24 +80,24 @@
                 top: 10,
                 right: 10,
                 bottom: 30,
-                left: 200
+                left: 40
             },
-            width = 800 - margin.left - margin.right,
+            width = 400 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
         var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
-        var x = d3.scaleLinear().range([0, width]);
-        var y = d3.scaleBand().range([height, 0]);
+        var x = d3.scaleBand().range([margin.left, width - margin.right]);
+        var y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
 
         var g = svg.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .attr("transform", "translate(" +0 + "," + margin.top + ")");
 
         if (state_name == "") {
             $("#state_label").html("All");
             mydata = d3.nest()
                 .key(function (d) {
-                    return d.Status;
+                    return d.Status_updated;
                 })
                 .rollup(function (d) {
                     return d.length;
@@ -205,7 +111,7 @@
             $("#state_label").html(state_name);
             mydata = d3.nest()
                 .key(function (d) {
-                    return d.Status;
+                    return d.Status_updated;
                 })
                 .rollup(function (d) {
                     return d.length;
@@ -219,45 +125,68 @@
         }
 
         mydata.sort(function (a, b) {
-            return b.value - a.value;
+            
+            //console.log(b.value - a.value)
+            //console.log(b)
+            return a.value - b.value;
         });
-
-        x.domain([0, d3.max(mydata, function (d) {
+    
+        y.domain([0, d3.max(mydata, function (d) {
             return d.value;
+            
         })]);
 
-        y.domain(mydata.map(function (d) {
+        x.domain(mydata.map(function (d) {
+            //console.log(d.key)
             return d.key;
         })).padding(0.1);
 
         g.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).ticks(5).tickFormat(function (d) {
-                return parseInt(d / 1000);
-            }).tickSizeInner([-height]));
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            //.attr("transform", "translate(0," + height-margin.bottom + ")")
+            .call(d3.axisBottom(x).tickSizeOuter(0))
+            // .ticks(3).tickFormat(function (d) {
+            //    //console.log(d)
+            //    return d;
+            // }));
 
         g.append("g")
             .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y));
 
         g.selectAll(".bar")
             .data(mydata)
             .enter().append("rect")
             .attr("class", "bar")
-            .attr("x", 0)
-            .attr("height", y.bandwidth())
+            .attr("x",function (d) {
+                //console.log(d.key)
+                return x(d.key);
+            } )
+            .attr("height", function (d) {
+                return y(0)-y(d.value);
+            })
             .attr("y", function (d) {
-                return y(d.key);
+                return y(d.value);
             })
-            .attr("width", function (d) {
-                return x(d.value);
-            })
+            .attr("width", x.bandwidth())
             .style("fill", function (d) {
-                var i = quantize(d.value);
-                var color = colors[i].getColors();
-                return "rgb(" + color.r + "," + color.g +
-                    "," + color.b + ")";
+                if(d.key=='Accepted'){
+                    console.log(d.value)
+                    return '#59a14f'
+                }
+                else if(d.key=='Rejected'){
+                    
+                    return '#e15759'
+                }
+                else{
+                    return '#bab0ac'
+                }
+                // var i = quantize(d.value);
+                // var color = colors[i].getColors();
+                // return "rgb(" + color.r + "," + color.g +
+                //     "," + color.b + ")";
             })
             .on("mousemove", function (d) {
                 createMap(d.key)
@@ -441,15 +370,15 @@
                 top: 10,
                 right: 10,
                 bottom: 30,
-                left: 200
+                left: 40
             },
-            width = 800 - margin.left - margin.right,
+            width = 400 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
         var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
-        var x = d3.scaleLinear().range([0, width]);
-        var y = d3.scaleBand().range([height, 0]);
+        var x = d3.scaleBand().range([margin.left, width - margin.right]);
+        var y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
 
         var g = svg.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -492,45 +421,60 @@
         }
 
         mydata.sort(function (a, b) {
-            return b.value - a.value;
+            return a.value - b.value;
         });
 
-        x.domain([0, d3.max(mydata, function (d) {
+        y.domain([0, d3.max(mydata, function (d) {
             return d.value;
         })]);
 
-        y.domain(mydata.map(function (d) {
+        x.domain(mydata.map(function (d) {
+            //console.log(d.key)
             return d.key;
         })).padding(0.1);
 
         g.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).ticks(5).tickFormat(function (d) {
-                return parseInt(d / 1000);
-            }).tickSizeInner([-height]));
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(x))
+            // .ticks(5).tickFormat(function (d) {
+            //     return parseInt(d / 1000);
+            // }).tickSizeInner([-height]));
 
         g.append("g")
             .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y));
 
         g.selectAll(".bar")
             .data(mydata)
             .enter().append("rect")
             .attr("class", "bar")
-            .attr("x", 0)
-            .attr("height", y.bandwidth())
+            .attr("x", function (d) {
+                return x(d.key);
+            } )
+            .attr("height", function (d) {
+                return y(0)-y(d.value);
+            })
             .attr("y", function (d) {
-                return y(d.key);
+                return y(d.value);
             })
-            .attr("width", function (d) {
-                return x(d.value);
-            })
+            .attr("width", x.bandwidth())
             .style("fill", function (d) {
-                var i = quantize(d.value);
-                var color = colors[i].getColors();
-                return "rgb(" + color.r + "," + color.g +
-                    "," + color.b + ")";
+                if(d.key=='Single Family'){
+                    //console.log(d.value)
+                    return '#f28e2b'
+                }
+                else if(d.key=='Mobile/Manufacture'){
+                    return '#e15759'
+                }
+                else{
+                    return '#4e79a7'
+                }
+                // var i = quantize(d.value);
+                // var color = colors[i].getColors();
+                // return "rgb(" + color.r + "," + color.g +
+                //     "," + color.b + ")";
             })
             .on("mousemove", function (d) {
                 createMap(d.key)
@@ -551,19 +495,19 @@
         $('#product_loan_bar_chart').empty();
 
         var svg = d3.select("#product_loan_bar_chart"),
-            margin = {
+        margin = {
                 top: 10,
                 right: 10,
                 bottom: 30,
-                left: 200
+                left: 40
             },
-            width = 800 - margin.left - margin.right,
+            width = 400 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
         var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
-        var x = d3.scaleLinear().range([0, width]);
-        var y = d3.scaleBand().range([height, 0]);
+        var x = d3.scaleBand().range([margin.left, width - margin.right]);
+        var y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
 
         var g = svg.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -618,45 +562,52 @@
         }
 
         mydata.sort(function (a, b) {
-            return b.value - a.value;
+            return a.value - b.value;
         });
 
-        x.domain([0, d3.max(mydata, function (d) {
+        y.domain([0, d3.max(mydata, function (d) {
             return d.value;
         })]);
 
-        y.domain(mydata.map(function (d) {
+        x.domain(mydata.map(function (d) {
             return d.key;
         })).padding(0.1);
 
         g.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).ticks(5).tickFormat(function (d) {
-                return parseInt(d / 1000);
-            }).tickSizeInner([-height]));
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+    .attr("y", 0)
+    .attr("x", 9)
+    .attr("dy", ".35em")
+    .attr("transform", "rotate(90)")
+    .style("text-anchor", "start");
+            // .ticks(5).tickFormat(function (d) {
+            //     return parseInt(d / 1000);
+            // }).tickSizeInner([-height]));
 
         g.append("g")
             .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y));
 
         g.selectAll(".bar")
             .data(mydata)
             .enter().append("rect")
             .attr("class", "bar")
-            .attr("x", 0)
-            .attr("height", y.bandwidth())
+            .attr("x", function (d) {
+                return x(d.key);
+            } )
+            .attr("height", function (d) {
+                return y(0)-y(d.value);
+            })
             .attr("y", function (d) {
-                return y(d.key);
+                return y(d.value);
             })
-            .attr("width", function (d) {
-                return x(d.value);
-            })
+            .attr("width", x.bandwidth())
             .style("fill", function (d) {
-                var i = quantize(d.value);
-                var color = colors[i].getColors();
-                return "rgb(" + color.r + "," + color.g +
-                    "," + color.b + ")";
+                return '#4e79a7';
             })
             .on("mousemove", function (d) {
                 createMap(d.key)
@@ -681,15 +632,15 @@
                 top: 10,
                 right: 10,
                 bottom: 30,
-                left: 200
+                left: 40
             },
-            width = 800 - margin.left - margin.right,
+            width = 400 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
         var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
-        var x = d3.scaleLinear().range([0, width]);
-        var y = d3.scaleBand().range([height, 0]);
+        var x = d3.scaleBand().range([margin.left, width - margin.right]);
+        var y = d3.scaleLinear().range([height - margin.bottom, margin.top]);
 
         var g = svg.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -720,45 +671,54 @@
         }
 
         mydata.sort(function (a, b) {
-            return b.value - a.value;
+            return a.value - b.value;
         });
 
-        x.domain([0, d3.max(mydata, function (d) {
+        y.domain([0, d3.max(mydata, function (d) {
             return d.value;
         })]);
 
-        y.domain(mydata.map(function (d) {
+        x.domain(mydata.map(function (d) {
             return d.key;
         })).padding(0.1);
 
         g.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).ticks(5).tickFormat(function (d) {
-                return parseInt(d / 1000);
-            }).tickSizeInner([-height]));
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(x))
+            //.ticks(5).tickFormat(function (d) {
+            //     return parseInt(d / 1000);
+            // }).tickSizeInner([-height]));
 
         g.append("g")
             .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y));
+            
 
         g.selectAll(".bar")
             .data(mydata)
             .enter().append("rect")
             .attr("class", "bar")
-            .attr("x", 0)
-            .attr("height", y.bandwidth())
+            .attr("x",function (d) {
+                return x(d.key);
+            } )
+            .attr("height", function (d) {
+                return y(0)-y(d.value);
+            })
             .attr("y", function (d) {
-                return y(d.key);
+                return y(d.value);
             })
-            .attr("width", function (d) {
-                return x(d.value);
-            })
+            .attr("width", x.bandwidth())
             .style("fill", function (d) {
-                var i = quantize(d.value);
-                var color = colors[i].getColors();
-                return "rgb(" + color.r + "," + color.g +
-                    "," + color.b + ")";
+                if(d.key=='TRUE'){
+                    //console.log(d.value)
+                    return '#59a14f'
+                }
+                else if(d.key=='FALSE'){
+                    return '#e15759'
+                }
+                
             })
             .on("mousemove", function (d) {
                 createMap(d.key)
@@ -772,6 +732,20 @@
                 createMap()
                 tooltip.style("display", "none");
             });
+    }
+    //Function that opens tabs
+    function openTab(evt, cityName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
     }
 
 </script>
@@ -787,42 +761,46 @@
                 <svg width="800" height="700" id="choropleth_map"></svg>
             </td>
             <td>
-                <h2 id="barchart" align="center">Bar Chart</h2>
-                <h2>Losses 2015 [$] State:
-                    <span id="state_label">All</span>
-                </h2>
-                <svg width="400" height="700" id="bar_chart"></svg>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <h2 id="choropleth" align="center">Product Loan Type</h2>
-                <h2>Product Loan Type:
-                    <span id="damage_label">All</span>
-                </h2>
-                <svg width="500" height="700" id="product_loan_bar_chart"></svg>
-            </td>
-            <td>
-                <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
-                <h2>Property Use Type [$] State:
-                    <span id="state_label">All</span>
-                </h2>
-                <svg width="500" height="700" id="property_id_bar_chart"></svg>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
-                <h2>Property Use Type [$] State:
-                    <span id="state_label">All</span>
-                </h2>
-                <svg width="500" height="700" id="is_bestOffer_bar_chart"></svg>
-            </td>
-        </tr>
+                <div class="tab">
+                        <button class="tablinks" onclick="openTab(event, 'First')" id="defaultOpen">First</button>
+                        <button class="tablinks" onclick="openTab(event, 'Second')">Second</button>
+                        <button class="tablinks" onclick="openTab(event, 'Third')">Third</button>
+                        <button class="tablinks" onclick="openTab(event, 'Fourth')">Fourth</button>
+                    </div>
+                    
+                    <!-- Tab content -->
+                    <div id="First" class="tabcontent">
+                        <h2 id="barchart" align="center">Bar Chart</h2>
+                        <h2>Losses 2015 [$] State:
+                        <span id="state_label">All</span>
+                        </h2>
+                        <svg width="400" height="700" id="bar_chart"></svg>
+                    </div>
+                    <div id="Second" class="tabcontent">
+                        <h2 id="choropleth" align="center">Product Loan Type</h2>
+                        <h2>Product Loan Type:
+                        <span id="damage_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="product_loan_bar_chart"></svg>
+                    </div>
 
+                    <div id="Third" class="tabcontent">
+                        <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
+                        <h2>Property Use Type [$] State:
+                            <span id="state_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="property_id_bar_chart"></svg>
+                    </div>
+
+                    <div id="Fourth" class="tabcontent">
+                        <h2 id="barchart" align="center">Property Use Type Bar Chart</h2>
+                        <h2>Property Use Type [$] State:
+                            <span id="state_label">All</span>
+                        </h2>
+                        <svg width="500" height="700" id="is_bestOffer_bar_chart"></svg>
+                    </div>
+            </td>
+        </tr>
     </table>
     <div id="tooltip-container"></div>
-
-
-
 </body>
